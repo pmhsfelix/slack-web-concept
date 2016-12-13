@@ -26,7 +26,7 @@ wt init your-email@example.com
 wt create --name slack-web-concept index.js
 ```
 
-* Go to your slack and create a [slash command](https://{teamname}.slack.com/apps/search?q=slash)
+* Go to your slack and create a [slash command](https://api.slack.com/slash-commands)
   * Give it a name (e.g. `/web-concept`).
   * Fill the URL with the webtask URL copied in the previous step.
   * Copy the token.
