@@ -71,7 +71,7 @@ module.exports = function (ctx, cb) {
             title_link: spec
           },
           {
-            title: "See the http:\\webconcepts.info page",
+            title: "See the http://webconcepts.info page",
             title_link: site
           }
         ]
