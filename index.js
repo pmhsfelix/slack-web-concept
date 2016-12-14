@@ -1,14 +1,24 @@
 'use latest'
 const request = require('request')
 const uri = (type) =>  (concept) => `http://webconcepts.info/concepts/${type}/${concept}.json`
+const allConcepts = 'http://webconcepts.info/concepts.json'
 
-var concepts = {
-  'status': uri('http-status-code'),
-  'method': uri('http-method'),
-  'relation': uri('link-relation')
-}
+var concepts;
+var conceptList;
 
-var conceptList = Object.keys(concepts).join(', ')
+request(allConcepts, (error, response, body) => {
+  if (error || response.statusCode >= 500){
+    return;
+  }
+  
+  var json = JSON.parse(body);
+  
+  conceptList = json.map(c => c.concept);
+  concepts = conceptList.reduce((acc, concept) => { 
+    acc[concept] = uri(concept);
+    return acc; 
+  }, {});
+});
 
 module.exports = function (ctx, cb) {
 
