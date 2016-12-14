@@ -60,18 +60,21 @@ module.exports = function (ctx, cb) {
       return send(`Unable to find the "${conceptName}" concept, sorry.`);
     }
 
-    return send(
-      `*${conceptName}*:\n${conceptValue.details[0].description}`,
-      [
-        {
-          title: "See the detailed specification",
-          title_link: conceptValue.details[0].specification
-        },
-        {
-          title: "See the http://webconcepts.info page",
-          title_link: conceptValue.id
-        }
-      ]
-    );
+    var respText = conceptValue.details[0].description;
+    var spec = conceptValue.details[0].documentation;
+    var site = conceptValue.id;
+    send(
+        `*${conceptName}*:\n${respText}`,
+        [
+          {
+            title: "See the detailed specification",
+            title_link: spec
+          },
+          {
+            title: "See the http://webconcepts.info page",
+            title_link: site
+          }
+        ]
+      );
   });
 };
