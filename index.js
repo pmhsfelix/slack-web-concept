@@ -1,24 +1,6 @@
 'use latest'
 const request = require('request')
-const uri = (type) =>  (concept) => `http://webconcepts.info/concepts/${type}/${concept}.json`
-const allConcepts = 'http://webconcepts.info/concepts.json'
-
-var concepts = {};
-var conceptList = [];
-
-request(allConcepts, (error, response, body) => {
-  if (error || response.statusCode >= 500){
-    return;
-  }
-  
-  var json = JSON.parse(body);
-  
-  conceptList = json.map(c => c.concept);
-  concepts = conceptList.reduce((acc, concept) => { 
-    acc[concept] = uri(concept);
-    return acc; 
-  }, {});
-});
+const conceptsUrl = 'http://webconcepts.info/concepts.json'
 
 module.exports = function (ctx, cb) {
 
@@ -55,36 +37,41 @@ module.exports = function (ctx, cb) {
 
   var conceptType = parts[0];
   var conceptName = parts[1];
-  var f = concepts[conceptType];
-  if(!f){
-    return send(`Unknown concept-type "${parts[0]}", usage: "{concept-type} {concept-name}", where {concept-type} can be: ${conceptList}`);
-  }
 
-  var reqUri = f(conceptName);
-
-  request(reqUri, (error, response, body) => {
+  request(conceptsUrl, (error, response, body) => {
     if (error || response.statusCode >= 500){
       return send('Unable to access the http://webconcepts.info, sorry');
     }
-    if (response.statusCode > 200){
-      return send(`Unable to find the "${conceptName}" concept, sorry.`)
+
+    var concepts = JSON.parse(body);
+    var concept = concepts.filter(c => new RegExp('^' + conceptType + '$', 'i').test(c.concept))[0];
+
+    if(!concept) {
+      var conceptList = concepts.reduce((list, c) => {
+        list += ', ' + c.concept;
+        return list;
+      }, '');
+      return send(`Unknown concept-type "${parts[0]}", usage: "{concept-type} {concept-name}", where {concept-type} can be: ${conceptList}`);
     }
-    var json = JSON.parse(body)
-    var respText = json.details[0].description;
-    var spec = json.details[0].documentation;
-    var site = json.id
-    send(
-        `*${conceptName}*:\n${respText}`,
-        [
-          {
-            title: "See the detailed specification",
-            title_link: spec
-          },
-          {
-            title: "See the http://webconcepts.info page",
-            title_link: site
-          }
-        ]
-      );
+
+    var conceptValue = concept.values.filter(c => new RegExp('^' + conceptName + '$', 'i').test(c.value))[0];
+
+    if(!conceptValue) {
+      return send(`Unable to find the "${conceptName}" concept, sorry.`);
+    }
+
+    return send(
+      `*${conceptName}*:\n${conceptValue.details[0].description}`,
+      [
+        {
+          title: "See the detailed specification",
+          title_link: conceptValue.details[0].specification
+        },
+        {
+          title: "See the http://webconcepts.info page",
+          title_link: conceptValue.id
+        }
+      ]
+    );
   });
 };
