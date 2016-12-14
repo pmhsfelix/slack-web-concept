@@ -3,8 +3,8 @@ const request = require('request')
 const uri = (type) =>  (concept) => `http://webconcepts.info/concepts/${type}/${concept}.json`
 const allConcepts = 'http://webconcepts.info/concepts.json'
 
-var concepts;
-var conceptList;
+var concepts = {};
+var conceptList = [];
 
 request(allConcepts, (error, response, body) => {
   if (error || response.statusCode >= 500){
