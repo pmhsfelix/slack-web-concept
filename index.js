@@ -1,14 +1,6 @@
 'use latest'
 const request = require('request')
-const uri = (type) =>  (concept) => `http://webconcepts.info/concepts/${type}/${concept}.json`
-
-var concepts = {
-  'status': uri('http-status-code'),
-  'method': uri('http-method'),
-  'relation': uri('link-relation')
-}
-
-var conceptList = Object.keys(concepts).join(', ')
+const conceptsUrl = 'http://webconcepts.info/concepts.json'
 
 module.exports = function (ctx, cb) {
 
@@ -45,24 +37,32 @@ module.exports = function (ctx, cb) {
 
   var conceptType = parts[0];
   var conceptName = parts[1];
-  var f = concepts[conceptType];
-  if(!f){
-    return send(`Unknown concept-type "${parts[0]}", usage: "{concept-type} {concept-name}", where {concept-type} can be: ${conceptList}`);
-  }
 
-  var reqUri = f(conceptName);
-
-  request(reqUri, (error, response, body) => {
+  request(conceptsUrl, (error, response, body) => {
     if (error || response.statusCode >= 500){
       return send('Unable to access the http://webconcepts.info, sorry');
     }
-    if (response.statusCode > 200){
-      return send(`Unable to find the "${conceptName}" concept, sorry.`)
+
+    var concepts = JSON.parse(body);
+    var concept = concepts.filter(c => new RegExp('^' + conceptType + '$', 'i').test(c.concept))[0];
+
+    if(!concept) {
+      var conceptList = concepts.reduce((list, c) => {
+        list += ', ' + c.concept;
+        return list;
+      }, '');
+      return send(`Unknown concept-type "${parts[0]}", usage: "{concept-type} {concept-name}", where {concept-type} can be: ${conceptList}`);
     }
-    var json = JSON.parse(body)
-    var respText = json.details[0].description;
-    var spec = json.details[0].documentation;
-    var site = json.id
+
+    var conceptValue = concept.values.filter(c => new RegExp('^' + conceptName + '$', 'i').test(c.value))[0];
+
+    if(!conceptValue) {
+      return send(`Unable to find the "${conceptName}" concept, sorry.`);
+    }
+
+    var respText = conceptValue.details[0].description;
+    var spec = conceptValue.details[0].documentation;
+    var site = conceptValue.id;
     send(
         `*${conceptName}*:\n${respText}`,
         [
