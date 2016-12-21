@@ -70,11 +70,12 @@ module.exports = function (ctx, cb) {
       return send(`Unable to find the "${conceptName}" concept, sorry.`);
     }
 
+    const conceptTypeName = concept['name-singular'];
     const respText = conceptValue.details[0].description;
     const spec = conceptValue.details[0].documentation;
     const site = conceptValue.id;
     send(
-        `*${conceptName}*:\n${respText}`,
+        `*${conceptTypeName} ${conceptName}*:\n${respText}`,
         [
           {
             title: "See the detailed specification",
