@@ -73,11 +73,12 @@ module.exports = function (ctx, cb) {
     const respText = conceptValue.details[0].description;
     const spec = conceptValue.details[0].documentation;
     const site = conceptValue.id;
+    const specName = conceptValue.details[0]['spec-name'];
     send(
         `*${conceptName}*:\n${respText}`,
         [
           {
-            title: "See the detailed specification",
+            title: `See the detailed specification (${specName})`,
             title_link: spec
           },
           {
