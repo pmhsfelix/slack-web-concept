@@ -32,7 +32,7 @@ module.exports = function (ctx, cb) {
 
   // authorize
   // yes, I know, not a constant time comparison :(
-  if(ctx.secrets['slack-token'] != ctx.data.token){
+  if(ctx.secrets['slack-token'] != ctx.body.token){
     return cb(null,{})
   }
 
@@ -44,13 +44,13 @@ module.exports = function (ctx, cb) {
     const concepts = JSON.parse(body);
 
     // check for empty ...
-    const text = ctx.data.text.trim();
+    const text = ctx.body.text.trim();
     if(!text){
       return sendUsage(concepts);
     }
 
     // ... or invalid command
-    const parts = ctx.data.text.trim().split(' ');
+    const parts = text.split(' ');
     if(parts.length != 2){
       return sendUsage(concepts);
     }
